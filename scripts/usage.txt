@@ -1,0 +1,11 @@
+I. Turtlebot3 
+    1. Bringup [1]
+        i. $ ssh ubuntu@{IP_ADDRESS_OF_RASPBERRY_PI}
+        ii. $ export TURTLEBOT3_MODEL=burger
+        iii. $ ros2 launch turtlebot3_bringup robot.launch.py
+    2. For Teleop:
+        On PC run:
+        $ ros2 run turtlebot3_teleop teleop_keyboard
+
+References  
+[1] https://emanual.robotis.com/docs/en/platform/turtlebot3/bringup/#bringup

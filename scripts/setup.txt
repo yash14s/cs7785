@@ -1,0 +1,88 @@
+I. Install Miniconda as per [1]. Deactivate base Miniconda environment following [3]
+
+II. Install ROS2 Humble Desktop following[2]
+    Note: $ sudo apt install ros-dev-tools
+    Installs python packages. So we might have to run this command again after activating the environment if we're running a seperate python environment.
+    1. Some more configuration:
+        i. $ echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+        ii. $ sudo apt install python3-colcon-common-extensions
+        iii. $ echo "source /usr/share/colcon_cd/function/colcon_cd.sh" >> ~/.bashrc
+        iv. $ echo "export _colcon_cd_root=/opt/ros/humble/" >> ~/.bashrc
+        v. $ echo "source ~/ros2_ws/install/setup.bash" >> ~/.bashrc
+        vi. $ echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> ~/.bashrc
+        vii. $ source ~/.bashrc
+    2. Follow [4], don't alter the ROS_LOCALHOST_ONLY variable, since we need to talk to Robots
+    3. Go through turtlesim basics following [5].
+    4. Get some examples [7]
+        i. $ cd
+        ii. $ mkdir -p ros2_ws/src && cd ros2_ws/src
+        iii. $ git clone https://github.com/ros2/examples src/examples -b humble
+        iv. $ cd ~/ros2_ws && colcon build
+        Test if it works
+        v. $ ros2 run examples_rclcpp_minimal_subscriber subscriber_member_function
+        vi. $ ros2 run examples_rclcpp_minimal_publisher publisher_member_function
+
+III Create ROS2 package (ament_cmake) [6]:
+    i. $ cd ~/ros2_ws/src 
+    ii. $ ros2 pkg create cs7785 --build-type ament_cmake
+    iii. $ cd ~/ros2_ws && colcon build --packages-select cs7785 
+    Create a dir with the same name as the package. This stores all imports and an init file.
+    iv. $ cd ~/ros2_ws/src/cs7785/ && mkdir cs7785
+    v. $ touch cs7785/__init__.py
+    Create a scripts dir for storing executables
+    vi. $ mkdir scripts
+    vii. Copy talker.py and listener.py from examples to scripts dir. Add shebang, and make both executable.
+    viii. Update package.xml: add lines shown in [A1]
+    ix. Update CMakeLists.txt: add lines shown in [A2]
+    x. $ echo "alias cb_7785=cd ~/ros2_ws && colcon build --packages-select cs7785" >> ~/.bashrc
+    xi. $ source ~/.bashrc 
+    xii. $ cb_7785
+
+III. Install Turtlebot3 [8]:
+    i. $ sudo apt-get install ros-humble-gazebo-*
+    ii. $ sudo apt install ros-humble-cartographer
+    iii. $ sudo apt install ros-humble-cartographer-ros
+    iv. $ sudo apt install ros-humble-navigation2 -y
+    v. $ sudo apt install ros-humble-nav2-bringup -y
+    vi. $ mkdir -p ~/turtlebot3_ws/src
+    vii. $ cd ~/turtlebot3_ws/src/
+    viii. $ git clone -b humble-devel https://github.com/ROBOTIS-GIT/DynamixelSDK.git && git clone -b humble-devel https://github.com/ROBOTIS-GIT/turtlebot3_msgs.git && git clone -b humble-devel https://github.com/ROBOTIS-GIT/turtlebot3.git
+    ix. $ cd ~/turtlebot3_ws
+    x. $ colcon build --symlink-install
+    xi. $ echo 'source ~/turtlebot3_ws/install/setup.bash' >> ~/.bashrc && source ~/.bashrc
+    xii. $ echo 'export ROS_DOMAIN_ID=67 #TURTLEBOT3' >> ~/.bashrc && source ~/.bashrc
+    xiii. $ echo 'export TURTLEBOT3_MODEL=burger' >> ~/.bashrc && source ~/.bashrc
+    
+
+References:
+[1] https://conda.io/projects/conda/en/stable/user-guide/install/linux.html
+[2] https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html 
+[3] https://github.com/yash14s/Drone/blob/main/installation%20and%20setup/Setup%20arducopter%20SITL
+[4] https://docs.ros.org/en/humble/Tutorials/Beginner-CLI-Tools/Configuring-ROS2-Environment.html
+[5] https://docs.ros.org/en/humble/Tutorials/Beginner-CLI-Tools/Introducing-Turtlesim/Introducing-Turtlesim.html#background
+[6] https://roboticsbackend.com/ros2-package-for-both-python-and-cpp-nodes/
+[7] https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html
+[8] https://emanual.robotis.com/docs/en/platform/turtlebot3/quick-start/ 
+
+
+Appendix
+[A1]   
+    <buildtool_depend>ament_cmake</buildtool_depend>
+    <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+    <depend>rclcpp</depend>
+    <depend>rclpy</depend>
+
+[A2]
+    find_package(ament_cmake_python REQUIRED)
+    find_package(rclcpp REQUIRED)
+    find_package(rclpy REQUIRED)
+
+    # Install Python modules
+    ament_python_install_package(${PROJECT_NAME})
+    # Install Python executables
+    install(PROGRAMS
+    scripts/talker.py
+    scripts/listener.py
+    DESTINATION lib/${PROJECT_NAME}
+    )
