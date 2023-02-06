@@ -1,11 +1,15 @@
 I. Turtlebot3 
     1. Bringup [1]
-        i. $ ssh ubuntu@{IP_ADDRESS_OF_RASPBERRY_PI}
+        i. $ ssh burger@{IP_ADDRESS_OF_RASPBERRY_PI}
+            password: burger
         ii. $ export TURTLEBOT3_MODEL=burger
         iii. $ ros2 launch turtlebot3_bringup robot.launch.py
     2. For Teleop:
         On PC run:
         $ ros2 run turtlebot3_teleop teleop_keyboard
+    3. For camera stream:
+        i. ssh 
+        ii. $ ros2 launch turtlebot3_bringup camera_robot.launch.py
 
 References  
 [1] https://emanual.robotis.com/docs/en/platform/turtlebot3/bringup/#bringup
