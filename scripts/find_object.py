@@ -5,6 +5,7 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import CompressedImage
+from sensor_msgs.msg import Image
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy, QoSDurabilityPolicy
 from geometry_msgs.msg import Twist,Point
 import sys
@@ -48,7 +49,7 @@ class find_object(Node):
 
 		# Declare that the find_object node is subcribing to the /camera/image/compressed topic.
 		self._video_subscriber = self.create_subscription(
-				CompressedImage,
+				Image,
 				'/camera/image_raw',
 				self._image_callback,
 				image_qos_profile)
@@ -59,23 +60,23 @@ class find_object(Node):
 
 	def _image_callback(self, CompressedImage):	
 		# The "CompressedImage" is transformed to a color image in BGR space and is store in "_imgBGR"
-		self._imgBGR = CvBridge().compressed_imgmsg_to_cv2(CompressedImage, "bgr8")
+		#self._imgBGR = CvBridge().compressed_imgmsg_to_cv2(CompressedImage, "bgr8")
+		self._imgBGR = CvBridge().imgmsg_to_cv2(CompressedImage, "bgr8")
 		if(self._display_image):
 			# Display the image in a window
 			self.show_image(self._imgBGR)
-			hsvLower = (0, 80, 90)
-			hsvUpper = (100, 180, 210)
+			hsvLower = (120, 100, 100)
+			hsvUpper = (150, 255, 255)
 			rgb_image = self._imgBGR
 			hsv_image = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2HSV)
 			cv2.imshow("hsv_image",hsv_image)
 			cv2.waitKey(1)
-			#print(hsv_image[120][160])
 			binary_image_mask = cv2.inRange(hsv_image, hsvLower, hsvUpper)  
 			#cv2.imshow("hsv_image",binary_image_mask)
 			#cv2.waitKey(1)
 			contours, hierarchy = cv2.findContours(binary_image_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-			self.cx=160
-			self.cy=120
+			self.cx = 160
+			self.cy = 120
 			for c in contours:
 				area = cv2.contourArea(c)
 				((x, y), radius) = cv2.minEnclosingCircle(c)
@@ -97,7 +98,6 @@ class find_object(Node):
 			msg.x=float(self.cx)
 			msg.y=float(self.cy)
 			self.object_publisher.publish(msg)
-			#self.convert_pixel_to_direction()
 
 	def get_image(self):
 		return self._imgBGR
@@ -111,7 +111,6 @@ class find_object(Node):
 def main():
 	rclpy.init() #init routine needed for ROS2.
 	video_subscriber = find_object() #Create class object to be used.
-	
 	rclpy.spin(video_subscriber) # Trigger callback processing.		
 
 	#Clean up and shutdown.

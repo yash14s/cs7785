@@ -24,23 +24,35 @@ class rotate_robot(Node):
 		self.point_subscriber = self.create_subscription(
 				Point, '/object_coordinates', self.point_callback, qos_profile)
 
-		self.velocity_publisher = self.create_publisher(Twist, 'cmd_vel', 10)
+		self.center_publisher = self.create_publisher(Twist, 'cmd_vel', 10)
 		
 	def control_rotation(self):
 		velocity_msg = Twist()
-				
-		Kp = 0.01	# Define Proportional Controller Gain
-		reference_point = 160	#Define Center as the reference point
-
-		e = int(self.cx) - reference_point
-		velocity_msg.angular.z = -Kp * e
-
-		self.velocity_publisher.publish(velocity_msg)
+		#velocity_msg.linear.x = 0.0
+		velocity_msg.angular.z = 0.0
+		#if(self.area>1000):
+			#print("moving backward")
+			#velocity_msg.linear.x = -1.000
+		#elif(self.area<2000):
+			#print("moving forward")
+		# Center was 160	
+		if(int(self.cx)<=140):
+			print("moving left")
+			velocity_msg.angular.z = 0.2
+		elif(int(self.cx)>180):
+			print("moving right")
+			velocity_msg.angular.z = -0.2
+		else:
+			print("Object centered or No object detected")
+			velocity_msg.linear.x = 0.0
+			velocity_msg.angular.z = 0.0
+		self.center_publisher.publish(velocity_msg)
 		
+
 	def point_callback(self, msg):	
 		self.cx=msg.x
 		self.cy=msg.y
-		self.control_rotation()
+		self.convert_pixel_to_direction()
 
 
 def main():
