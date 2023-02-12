@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 #Pranay Mathur & Yash Srivastava
 
 import rclpy
@@ -5,9 +7,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import CompressedImage
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy, QoSDurabilityPolicy
 from geometry_msgs.msg import Twist,Point
-
 import sys
-
 import numpy as np
 import cv2
 from cv_bridge import CvBridge
@@ -49,36 +49,13 @@ class find_object(Node):
 		# Declare that the find_object node is subcribing to the /camera/image/compressed topic.
 		self._video_subscriber = self.create_subscription(
 				CompressedImage,
-				'/camera/image/compressed',
+				'/camera/image_raw',
 				self._image_callback,
 				image_qos_profile)
 		self._video_subscriber  # Prevents unused variable warning.
 
-		self.center_publisher = self.create_publisher(Twist, 'cmd_vel', 10)
 		self.object_publisher = self.create_publisher(Point,'/object_coordinates',10)
-		
-	def convert_pixel_to_direction(self):
-		velocity_msg = Twist()
-		velocity_msg.linear.x = 0.0
-		velocity_msg.angular.z = 0.0
-		#if(self.area>1000):
-			#print("moving backward")
-			#velocity_msg.linear.x = -1.000
-		#elif(self.area<2000):
-			#print("moving forward")
-		# Center was 160	
-		if(self.cx<=140):
-			print("moving left")
-			velocity_msg.angular.z = 0.2
-		elif(self.cx>180):
-			print("moving right")
-			velocity_msg.angular.z = -0.2
-		else:
-			print("Object centered or No object detected")
-			velocity_msg.linear.x = 0.0
-			velocity_msg.angular.z = 0.0
-		self.center_publisher.publish(velocity_msg)
-		
+
 
 	def _image_callback(self, CompressedImage):	
 		# The "CompressedImage" is transformed to a color image in BGR space and is store in "_imgBGR"
@@ -86,10 +63,8 @@ class find_object(Node):
 		if(self._display_image):
 			# Display the image in a window
 			self.show_image(self._imgBGR)
-			#hsvLower = (16, 190, 170)
-			#hsvUpper = (40, 240, 210)
 			hsvLower = (0, 80, 90)
-			hsvUpper = (30, 140, 210)
+			hsvUpper = (100, 180, 210)
 			rgb_image = self._imgBGR
 			hsv_image = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2HSV)
 			cv2.imshow("hsv_image",hsv_image)

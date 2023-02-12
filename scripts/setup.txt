@@ -52,6 +52,7 @@ III. Install Turtlebot3 [8]:
     xi. $ echo 'source ~/turtlebot3_ws/install/setup.bash' >> ~/.bashrc && source ~/.bashrc
     xii. $ echo 'export ROS_DOMAIN_ID=67 #TURTLEBOT3' >> ~/.bashrc && source ~/.bashrc
     xiii. $ echo 'export TURTLEBOT3_MODEL=burger' >> ~/.bashrc && source ~/.bashrc
+    ix. Follow [9] to add picamera to turtlebot. 
     
 
 References:
@@ -62,7 +63,8 @@ References:
 [5] https://docs.ros.org/en/humble/Tutorials/Beginner-CLI-Tools/Introducing-Turtlesim/Introducing-Turtlesim.html#background
 [6] https://roboticsbackend.com/ros2-package-for-both-python-and-cpp-nodes/
 [7] https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html
-[8] https://emanual.robotis.com/docs/en/platform/turtlebot3/quick-start/ 
+[8] https://emanual.robotis.com/docs/en/platform/turtlebot3/quick-start/
+[9] https://github.gatech.edu/swilson64/turtlebot3_sim_update/tree/ros2
 
 
 Appendix

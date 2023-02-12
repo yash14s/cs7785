@@ -32,7 +32,8 @@ ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS
   scripts/talker.py
   scripts/listener.py
-  scripts/find_ball.py
+  scripts/find_object.py
+  scripts/rotate_robot.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
