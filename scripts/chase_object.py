@@ -4,16 +4,16 @@
 
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Point,Twist
+from geometry_msgs.msg import Pose2D, Twist
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy, QoSDurabilityPolicy
 
 import sys
 
-class rotate_robot(Node):
+class chase_object(Node):
 
 	def __init__(self):
 		# Creates the node.
-		super().__init__('rotate_robot')
+		super().__init__('chase_object')
 		qos_profile = QoSProfile(
             reliability=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT,
             history=QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST,
@@ -21,35 +21,35 @@ class rotate_robot(Node):
             depth=1
         )
 		# Declare that the rotate_robot node is subcribing to the /camera/image/compressed topic.
-		self.point_subscriber = self.create_subscription(
-				Point, '/object_coordinates', self.point_callback, qos_profile)
+		self.angle_subscriber = self.create_subscription(
+				Pose2D, '/angle', self.object_pose_callback, qos_profile)
 
 		self.velocity_publisher = self.create_publisher(Twist, 'cmd_vel', 10)
 		
 	def control_rotation(self):
 		velocity_msg = Twist()
 				
-		Kp = 0.01	# Define Proportional Controller Gain
-		reference_point = 160	#Define Center as the reference point
+		Kp = 1.25	# Define Proportional Controller Gain
+		reference_point = 0.5427975	#Define Center as the reference point
 
-		e = int(self.cx) - reference_point
+		e = self.theta - reference_point
 		velocity_msg.angular.z = -Kp * e
 
 		self.velocity_publisher.publish(velocity_msg)
 		
-	def point_callback(self, msg):	
-		self.cx = msg.x
-		self.cy = msg.y
+
+	def object_pose_callback(self, msg):	
+		self.theta = msg.theta
 		self.control_rotation()
 
 
 def main():
 	rclpy.init() #init routine needed for ROS2.
-	point_subscriber = rotate_robot() #Create class object to be used.
-	rclpy.spin(point_subscriber) # Trigger callback processing.		
+	object_pose_subscriber = chase_object() #Create class object to be used.
+	rclpy.spin(object_pose_subscriber) # Trigger callback processing.		
 
 	#Clean up and shutdown.
-	point_subscriber.destroy_node()  
+	object_pose_subscriber.destroy_node()  
 	rclpy.shutdown()
 
 

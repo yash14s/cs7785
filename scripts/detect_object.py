@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
 
 #Pranay Mathur & Yash Srivastava
+#Converts pixel value to radians
 
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import CompressedImage
 from sensor_msgs.msg import Image
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy, QoSDurabilityPolicy
-from geometry_msgs.msg import Point
+from geometry_msgs.msg import Point, Pose2D
 import sys
 import numpy as np
 import cv2
 from cv_bridge import CvBridge
 
 
-class find_object(Node):
+
+class detect_object(Node):
 
 	def __init__(self):
-		# Creates the node.
-		super().__init__('find_object')
+		super().__init__('detect_object')
 
-		# Set Parameters
 		self.declare_parameter('show_image_bool', True)
 		self.declare_parameter('window_name', "Raw Image")
 
@@ -32,33 +32,34 @@ class find_object(Node):
 
 		# Declare some variables
 		self._titleOriginal = self.get_parameter(
-		    'window_name').value  # Image Window Title
+			'window_name').value  # Image Window Title
 		if (self._display_image):
 		# Set Up Image Viewing
 			cv2.namedWindow(self._titleOriginal, cv2.WINDOW_AUTOSIZE)  # Viewing Window
 			# Viewing Window Original Location
 			cv2.moveWindow(self._titleOriginal, 50, 50)
 
-		# Set up QoS Profiles for passing images over WiFi
-		image_qos_profile = QoSProfile(
-            reliability=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT,
-            history=QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST,
-            durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_VOLATILE,
-            depth=1
-        )
+		qos_profile = QoSProfile(
+			reliability=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT,
+			history=QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+			durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_VOLATILE,
+			depth=1
+		)
 
-		# Declare that the find_object node is subcribing to the /camera/image/compressed topic.
 		self._video_subscriber = self.create_subscription(
 				Image,
 				'/camera/image_raw',
 				self._image_callback,
-				image_qos_profile)
+				qos_profile)
 		self._video_subscriber  # Prevents unused variable warning.
 
-		self.object_publisher = self.create_publisher(Point, '/object_coordinates', 10)
+		self.angle_publisher = self.create_publisher(Pose2D, '/angle', 10)
 
+	def pixel_to_radians(self, pixel):
+		#camera horizontal FOV = 1.085595
+		self.angle = pixel * (1.085595/320)
 
-	def _image_callback(self, CompressedImage):	
+	def _image_callback(self, CompressedImage):
 		# The "CompressedImage" is transformed to a color image in BGR space and is store in "_imgBGR"
 		#self._imgBGR = CvBridge().compressed_imgmsg_to_cv2(CompressedImage, "bgr8")
 		self._imgBGR = CvBridge().imgmsg_to_cv2(CompressedImage, "bgr8")
@@ -71,7 +72,7 @@ class find_object(Node):
 			hsv_image = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2HSV)
 			cv2.imshow("hsv_image",hsv_image)
 			cv2.waitKey(1)
-			binary_image_mask = cv2.inRange(hsv_image, hsvLower, hsvUpper)  
+			binary_image_mask = cv2.inRange(hsv_image, hsvLower, hsvUpper)
 			#cv2.imshow("hsv_image",binary_image_mask)
 			#cv2.waitKey(1)
 			contours, hierarchy = cv2.findContours(binary_image_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -89,15 +90,15 @@ class find_object(Node):
 					if (M['m00'] != 0):
 						self.cx = int(M['m10']/M['m00'])
 						self.cy = int(M['m01']/M['m00'])
-						self.area=area
-						print(self.cx, self.cy)
+						self.area = area
 					cv2.circle(rgb_image, (self.cx, self.cy), (int)(radius), (0, 0, 255), 1)
 			cv2.imshow("Output", rgb_image)
 			cv2.waitKey(1)
-			msg = Point()
-			msg.x = float(self.cx)
-			msg.y = float(self.cy)
-			self.object_publisher.publish(msg)
+
+			self.pixel_to_radians(self.cx)
+			msg = Pose2D()
+			msg.theta = self.angle
+			self.angle_publisher.publish(msg)
 
 	def get_image(self):
 		return self._imgBGR
@@ -109,12 +110,13 @@ class find_object(Node):
 
 
 def main():
-	rclpy.init() #init routine needed for ROS2.
-	video_subscriber = find_object() #Create class object to be used.
-	rclpy.spin(video_subscriber) # Trigger callback processing.		
+	rclpy.init()
+	video_subscriber = detect_object()
+
+	rclpy.spin(video_subscriber)
 
 	#Clean up and shutdown.
-	video_subscriber.destroy_node()  
+	video_subscriber.destroy_node()
 	rclpy.shutdown()
 
 
