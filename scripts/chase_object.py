@@ -31,8 +31,8 @@ class chase_object(Node):
 		velocity_msg = Twist()
 		
 		# Define P Controller Gains
-		Kp_angular = 1.7
-		Kp_linear = 0.07
+		Kp_angular = 2
+		Kp_linear = 0.04
 
 		# Define reference points
 		REFERENCE_ANGLE = 0.5427975
