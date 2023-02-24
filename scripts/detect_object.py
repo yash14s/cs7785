@@ -14,6 +14,9 @@ import numpy as np
 import cv2
 from cv_bridge import CvBridge
 
+#Select image topic depending upon sim/real
+image_topic = '/camera/image_raw'
+#image_topic = '/camera/image/compressed'
 
 
 class detect_object(Node):
@@ -48,7 +51,7 @@ class detect_object(Node):
 
 		self._video_subscriber = self.create_subscription(
 				Image,
-				'/camera/image_raw',
+				image_topic,
 				self._image_callback,
 				qos_profile)
 		self._video_subscriber  # Prevents unused variable warning.
@@ -73,6 +76,8 @@ class detect_object(Node):
 			cv2.imshow("hsv_image",hsv_image)
 			cv2.waitKey(1)
 			binary_image_mask = cv2.inRange(hsv_image, hsvLower, hsvUpper)
+			#cv2.imshow("hsv_image",binary_image_mask)
+			#cv2.waitKey(1)
 			contours, hierarchy = cv2.findContours(binary_image_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 			self.cx = 160
 			self.cy = 120
@@ -109,12 +114,9 @@ class detect_object(Node):
 
 def main():
 	rclpy.init()
-	video_subscriber = detect_object()
-
-	rclpy.spin(video_subscriber)
-
-	#Clean up and shutdown.
-	video_subscriber.destroy_node()
+	detect_object_node = detect_object()
+	rclpy.spin(detect_object_node)
+	detect_object_node.destroy_node()
 	rclpy.shutdown()
 
 
