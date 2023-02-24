@@ -73,8 +73,6 @@ class detect_object(Node):
 			cv2.imshow("hsv_image",hsv_image)
 			cv2.waitKey(1)
 			binary_image_mask = cv2.inRange(hsv_image, hsvLower, hsvUpper)
-			#cv2.imshow("hsv_image",binary_image_mask)
-			#cv2.waitKey(1)
 			contours, hierarchy = cv2.findContours(binary_image_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 			self.cx = 160
 			self.cy = 120

@@ -8,13 +8,21 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy, QoSDurabilityPolicy
 import sys
 from find_object import find_object
-from sensor_msgs.msg import LaserScan, Range
+from sensor_msgs.msg import LaserScan, Pose2D
 
 
-class detect_object(Node):
+class get_object_range(Node):
 
     def __init__(self):
-        super().__init__('detect_object')
+        super().__init__('get_object_range')
+
+        qos_profile = QoSProfile(
+			reliability=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT,
+			history=QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+			durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_VOLATILE,
+			depth=1
+		)
+        
         self.lidar_subscriber = self.create_subscription(
             LaserScan,
             '/scan',

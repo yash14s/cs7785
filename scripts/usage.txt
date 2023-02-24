@@ -12,7 +12,7 @@ I. Turtlebot3
         ii. $ ros2 launch turtlebot3_bringup camera_robot.launch.py
 
 II. Gazebo:
-    1. $ ros2 launch turtlebot3_gazebo ball.world
+    1. $ ros2 launch turtlebot3_gazebo ball_launch.py
     2. $ ros2 run rqt_image_view rqt_image_view
 
 References  
