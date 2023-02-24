@@ -4,10 +4,10 @@
 
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Point,Twist
+from geometry_msgs.msg import Pose2D,Twist
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy, QoSDurabilityPolicy
-
 import sys
+
 
 class chase_object(Node):
 
@@ -20,49 +20,54 @@ class chase_object(Node):
             durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_VOLATILE,
             depth=1
         )
-		# Declare that the chase_object node is subcribing to the /camera/image/compressed topic.
+
 		self.point_subscriber = self.create_subscription(
-				Point, '/LidarCameraCoordinates', self.point_callback, qos_profile)
+				Pose2D, '/object_coordinates', self.object_pose_callback, qos_profile)
 
 		self.velocity_publisher = self.create_publisher(Twist, 'cmd_vel', 10)
-		
-	def control_rotation(self):
+
+
+	def controller(self):
 		velocity_msg = Twist()
-				
-		Kp_angular = 0.005	# Define Proportional Controller Gain
-		reference_point = 160	#Define Center as the reference point
-		Kp_forward = 0.1
+		
+		# Define P Controller Gains
+		Kp_angular = 1.7
+		Kp_linear = 0.07
 
-		e = int(self.cx) - reference_point
-		e_forward = self.distance_y-0.4
+		# Define reference points
+		REFERENCE_ANGLE = 0.5427975
+		REFERENCE_DISTANCE = 0.4
 
-		if abs(e)>10:
-			velocity_msg.angular.z = -Kp_angular * e
-			print("Angular Velocity:",velocity_msg.angular.z)
-		if abs(e_forward)>0.1:
-			velocity_msg.linear.x = Kp_forward * e_forward
-			print("Linear Velocity:",velocity_msg.linear.x)
-		elif abs(e_forward)>2:
-			velocity_msg.linear.x = 0.4
-			#print(self.distance_y)
-		else:
-			velocity_msg.linear.x=0.0
-			velocity_msg.angular.z=0.0
+		# Compute error
+		e_angular = self.angle - REFERENCE_ANGLE
+		e_linear = self.distance - REFERENCE_DISTANCE
+
+		# Compute velocity and publish
+		linear_velocity = Kp_linear * e_linear
+		angular_velocity = -Kp_angular * e_angular
+
+		if abs(linear_velocity) < 0.01:
+			linear_velocity = 0.0
+		
+		if abs(angular_velocity) < 0.002:
+			angular_velocity = 0.0
+
+		velocity_msg.linear.x = linear_velocity
+		velocity_msg.angular.z = angular_velocity
+
 		self.velocity_publisher.publish(velocity_msg)
 		
-	def point_callback(self, msg):	
-		self.cx = msg.x
-		self.distance_y = msg.y
-		self.control_rotation()
+	def object_pose_callback(self, msg):	
+		self.distance = msg.x
+		self.angle = msg.theta
+		self.controller()
 
 
 def main():
-	rclpy.init() #init routine needed for ROS2.
-	point_subscriber = chase_object() #Create class object to be used.
-	rclpy.spin(point_subscriber) # Trigger callback processing.		
-
-	#Clean up and shutdown.
-	point_subscriber.destroy_node()  
+	rclpy.init()
+	chase_object_node = chase_object()
+	rclpy.spin(chase_object_node)
+	chase_object_node.destroy_node()  
 	rclpy.shutdown()
 
 

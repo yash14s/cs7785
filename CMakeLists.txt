@@ -35,6 +35,7 @@ install(PROGRAMS
   scripts/find_object.py
   scripts/rotate_robot.py
   scripts/detect_object.py
+  scripts/get_object_range.py
   scripts/chase_object.py
   DESTINATION lib/${PROJECT_NAME}
 )
