@@ -7,7 +7,6 @@ from rclpy.node import Node
 from geometry_msgs.msg import Pose2D
 from sensor_msgs.msg import LaserScan
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy, QoSDurabilityPolicy
-from std_msgs.msg import Bool, Int8
 import sys
 import math
 import numpy as np
@@ -26,54 +25,73 @@ class get_object_range(Node):
 		self.laserscan_subscriber = self.create_subscription(
 			LaserScan, '/scan', self.scan_callback, qos_profile)
 
-		#Get the phase of the mission from navigation
-		self.phase_subscriber = self.create_subscription(
-			LaserScan, '/phase_topic', self.phase_callback, qos_profile)
+		self.object_pose_publisher = self.create_publisher(
+			Pose2D , '/object_pose', 10)
 
-		self.object_detected_publisher = self.create_publisher(
-			Bool, '/object_detected', 10)
-
-		
-		self.is_object_detected = False
+		#Initialize
+		self.cone_angle = self.deg2rad(30)	#Define cone angle, robot will only look for obstacles within this region
 
 
-	def phase_callback(self, msg)
-		self.phase = Int8()
-		self.phase.data = msg.data
-
-	#TODO modify
 	def scan_callback(self, msg):
+		#Get some useful LIDAR properties
+		self.range_data = LaserScan()
+		self.range_data.ranges = msg.ranges
+		self.range_data.angle_min = msg.angle_min
+		self.range_data.angle_max = msg.angle_max
+		self.range_data.angle_increment = msg.angle_increment
+		self.range_data.range_max = msg.range_max
+		
+		self.compute_window_size()
 
-		range_data = LaserScan()
-		range_data.ranges = msg.ranges
-		range_data.angle_min = msg.angle_min
-		range_data.angle_max = msg.angle_max
-		range_data.angle_increment = msg.angle_increment
+		self.compute_obstacle_distance_angle()
+		
+		self.compute_object_pose()
 
-		if self.phase == 1:
-			index = round(deg2rad(270)/range_data.angle_increment)
-			window_size = 4
-		elif self.phase == 2:
-			index = round(deg2rad(0)/range_data.angle_increment)
-			window_size = 4
-		elif self.phase == 3:
-			index = round(deg2rad(0)/range_data.angle_increment)
-			window_size = 30
+	def compute_window_size(self):
+		theta = self.cone_angle
 
-		neighbour_distances = []
-		for i in range(2 * window_size):
-			if range_data.ranges[index + window_size - i] != float("inf") and (not np.isnan(range_data.ranges[index + window_size - i])):
-				self.neighbour_distances.append(range_data.ranges[index + window_size - i])
+		right_index = round((theta/2 - self.range_data.angle_min)/self.range_data.angle_increment)
+		left_index = round((self.range_data.angle_max - theta/2)/self.range_data.angle_increment) - 1
+		self.window_size = 2 * right_index
 
-		#print(self.neighbour_distances)
-		if not self.neighbour_distances:	#If all distances were inf, default to REFERENCE_DISTANCE
-			self.distance = self.REFERENCE_DISTANCE
+		#print("Window size:", self.window_size)
+		#print("left_index:", left_index)
+		#print("right_index:", right_index)
+
+	
+	def compute_obstacle_distance_angle(self):
+		#Init
+		min_distance = float("inf")
+		index = 0
+		distance = self.range_data.range_max
+
+		for i in range(2 * self.window_size):
+			raw_distance = self.range_data.ranges[self.window_size - i]
+			if raw_distance != float("inf") and (not np.isnan(raw_distance)):
+				if raw_distance < min_distance:
+					index = self.window_size - i
+					min_distance = raw_distance
+
+		self.distance = min_distance
+
+		if index < 0:
+			self.theta = self.range_data.angle_max - (index + 1) * self.range_data.angle_increment
 
 		else:
-			self.distance = float(np.min(self.neighbour_distances))
+			self.theta = self.range_data.angle_min + index * self.range_data.angle_increment
 
-def deg2rad(degrees)
-	return degrees * math.pi/180
+
+	def compute_object_pose(self):
+		object_pose = Pose2D()
+		object_pose.x = self.distance * math.cos(self.theta)
+		object_pose.y = self.distance * math.sin(self.theta)
+		object_pose.theta = self.theta
+		self.object_pose_publisher.publish(object_pose)
+
+
+	def deg2rad(self, degrees):
+		return degrees * math.pi/180
+
 
 def main():
 	rclpy.init()
