@@ -29,7 +29,7 @@ class get_object_range(Node):
 			Pose2D , '/object_pose', 10)
 
 		#Initialize
-		self.cone_angle = self.deg2rad(30)	#Define cone angle, robot will only look for obstacles within this region
+		self.cone_angle = self.deg2rad(60)	#Define cone angle, robot will only look for obstacles within this region
 
 
 	def scan_callback(self, msg):
