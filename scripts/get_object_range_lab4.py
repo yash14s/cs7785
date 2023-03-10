@@ -41,22 +41,17 @@ class get_object_range(Node):
 		self.range_data.angle_increment = msg.angle_increment
 		self.range_data.range_max = msg.range_max
 		
-		self.compute_window_size()
+		self.compute_window()
 
 		self.compute_obstacle_distance_angle()
 		
 		self.compute_object_pose()
 
-	def compute_window_size(self):
+
+	def compute_window(self):
 		theta = self.cone_angle
-
-		right_index = round((theta/2 - self.range_data.angle_min)/self.range_data.angle_increment)
-		left_index = round((self.range_data.angle_max - theta/2)/self.range_data.angle_increment) - 1
-		self.window_size = 2 * right_index
-
-		#print("Window size:", self.window_size)
-		#print("left_index:", left_index)
-		#print("right_index:", right_index)
+		self.right_index = round((theta/2 - self.range_data.angle_min)/self.range_data.angle_increment)
+		self.left_index = round((self.range_data.angle_max - theta/2)/self.range_data.angle_increment) - 1
 
 	
 	def compute_obstacle_distance_angle(self):
@@ -65,20 +60,25 @@ class get_object_range(Node):
 		index = 0
 		distance = self.range_data.range_max
 
-		for i in range(2 * self.window_size):
-			raw_distance = self.range_data.ranges[self.window_size - i]
+		#Check from 0 to left_index
+		for i in range(self.left_index):
+			raw_distance = self.range_data.ranges[i]
 			if raw_distance != float("inf") and (not np.isnan(raw_distance)):
 				if raw_distance < min_distance:
-					index = self.window_size - i
+					index = i
+					min_distance = raw_distance
+		#Check from right_index to 0
+		for i in range(self.right_index, len(self.range_data.ranges)):
+			raw_distance = self.range_data.ranges[i]
+			if raw_distance != float("inf") and (not np.isnan(raw_distance)):
+				if raw_distance < min_distance:
+					index = i
 					min_distance = raw_distance
 
 		self.distance = min_distance
-
-		if index < 0:
-			self.theta = self.range_data.angle_max - (index + 1) * self.range_data.angle_increment
-
-		else:
-			self.theta = self.range_data.angle_min + index * self.range_data.angle_increment
+		#print("Index:", index)
+		#print("Distance:", self.distance)
+		self.theta = 2 * math.pi - (self.range_data.angle_min + index * self.range_data.angle_increment)
 
 
 	def compute_object_pose(self):
