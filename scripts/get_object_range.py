@@ -4,11 +4,11 @@
 
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Pose2D, Twist
+from geometry_msgs.msg import Pose2D
 from sensor_msgs.msg import LaserScan
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy, QoSDurabilityPolicy
-from std_msgs.msg import Bool
 import sys
+import math
 import numpy as np
 
 class get_object_range(Node):
@@ -22,67 +22,75 @@ class get_object_range(Node):
 			durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_VOLATILE,
 			depth=1
 		)
-		# Declare that the get_object_range node is subcribing to the /camera/image/compressed topic.
-		self.angle_subscriber = self.create_subscription(
-			Pose2D, '/angle', self.angle_callback, qos_profile)
 		self.laserscan_subscriber = self.create_subscription(
 			LaserScan, '/scan', self.scan_callback, qos_profile)
-		self.object_detected_subscriber = self.create_subscription(
-			Bool, '/object_detected', self.object_detected_callback, qos_profile)
 
-		self.object_coordinates_publisher = self.create_publisher(Pose2D, '/object_coordinates', 10)
+		self.object_pose_publisher = self.create_publisher(
+			Pose2D , '/object_pose', 10)
 
-		#Declare constants
-		self.REFERENCE_ANGLE = 0.5427975	#Angle when object is straight ahead
-		self.REFERENCE_DISTANCE = 0.4	#Reference distance to track
-		self.ANGULAR_INCREMENT = 0.01749303564429283 	#Angular increment of the lidar
-		self.INDEX_MARGIN = 4	#Tolerance for measuring distances
-		self.LIDAR_CAMERA_OFFSET = 1	# Offset between the LIDAR and Camera orientation
-		
-
-		#Init angle and distance
-		self.angle = self.REFERENCE_ANGLE
-		self.distance = self.REFERENCE_DISTANCE
-
-		self.is_object_detected = False
+		#Initialize
+		self.cone_angle = self.deg2rad(60)	#Define cone angle, robot will only look for obstacles within this region
 
 
-	def object_detected_callback(self, msg):
-		self.is_object_detected = msg.data
-
-	#In one of the callbacks, send the overall Pose2D
 	def scan_callback(self, msg):
-		if not self.is_object_detected:
-			self.distance = self.REFERENCE_DISTANCE
+		#Get some useful LIDAR properties
+		self.range_data = LaserScan()
+		self.range_data.ranges = msg.ranges
+		self.range_data.angle_min = msg.angle_min
+		self.range_data.angle_max = msg.angle_max
+		self.range_data.angle_increment = msg.angle_increment
+		self.range_data.range_max = msg.range_max
 		
-		else:
-			range_data = LaserScan()
-			range_data.ranges = msg.ranges
+		self.compute_window()
 
-			#Take distance measurement corresponding to the angular position of the object
-			self.index = round((self.angle - self.REFERENCE_ANGLE)/self.ANGULAR_INCREMENT) + self.LIDAR_CAMERA_OFFSET
-
-			self.neighbour_distances = []
-			for i in range(2 * self.INDEX_MARGIN):
-				if range_data.ranges[self.index + self.INDEX_MARGIN - i] != float("inf") and (not np.isnan(range_data.ranges[self.index + self.INDEX_MARGIN - i])):
-					self.neighbour_distances.append(range_data.ranges[self.index + self.INDEX_MARGIN - i])
-
-			#print(self.neighbour_distances)
-			if not self.neighbour_distances:	#If all distances were inf, default to REFERENCE_DISTANCE
-				self.distance = self.REFERENCE_DISTANCE
-
-			else:
-				self.distance = float(np.min(self.neighbour_distances))
+		self.compute_obstacle_distance_angle()
+		
+		self.compute_object_pose()
 
 
-	def angle_callback(self, msg):
-		self.angle = msg.theta
-		#Send distance and angle
+	def compute_window(self):
+		theta = self.cone_angle
+		self.right_index = round((theta/2 - self.range_data.angle_min)/self.range_data.angle_increment)
+		self.left_index = round((self.range_data.angle_max - theta/2)/self.range_data.angle_increment) - 1
+
+	
+	def compute_obstacle_distance_angle(self):
+		#Init
+		min_distance = float("inf")
+		index = 0
+		distance = self.range_data.range_max
+
+		#Check from 0 to left_index
+		for i in range(self.left_index):
+			raw_distance = self.range_data.ranges[i]
+			if raw_distance != float("inf") and (not np.isnan(raw_distance)):
+				if raw_distance < min_distance:
+					index = i
+					min_distance = raw_distance
+		#Check from right_index to 0
+		for i in range(self.right_index, len(self.range_data.ranges)):
+			raw_distance = self.range_data.ranges[i]
+			if raw_distance != float("inf") and (not np.isnan(raw_distance)):
+				if raw_distance < min_distance:
+					index = i
+					min_distance = raw_distance
+
+		self.distance = min_distance
+		#print("Index:", index)
+		#print("Distance:", self.distance)
+		self.theta = 2 * math.pi - (self.range_data.angle_min + index * self.range_data.angle_increment)
+
+
+	def compute_object_pose(self):
 		object_pose = Pose2D()
-		object_pose.x = self.distance
-		object_pose.theta = self.angle
-		self.object_coordinates_publisher.publish(object_pose)
+		object_pose.x = self.distance * math.cos(self.theta)
+		object_pose.y = self.distance * math.sin(self.theta)
+		object_pose.theta = self.theta
+		self.object_pose_publisher.publish(object_pose)
 
+
+	def deg2rad(self, degrees):
+		return degrees * math.pi/180
 
 
 def main():
