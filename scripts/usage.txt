@@ -17,15 +17,19 @@ II. Gazebo:
 
 III Mapping:
 ****ON ROBOT*******************************************************
-ros2 launch turtlebot3_bringup robot.launch.py
+$ ros2 launch turtlebot3_bringup robot.launch.py
+
+Gazebo:
+$ ros2 launch turtlebot3_gazebo turtlebot3_maze.launch.py use_sim_time:=true
 
 ***********ON YOUR PC************************************************
-ros2 launch turtlebot3_cartographer cartographer.launch.py
-ros2 run turtlebot3_teleop teleop_keyboard
-ros2 run nav2_map_server map_saver_cli -f ~/ros2_ws/src/cs7785/maps/map
+Build a map
+$ ros2 launch turtlebot3_cartographer cartographer.launch.py
+$ ros2 run turtlebot3_teleop teleop_keyboard
+$ ros2 run nav2_map_server map_saver_cli -f ~/ros2_ws/src/cs7785/maps/map
  
 *******************JUST FOR NAVIGATION NOT MAP CREATION**********************
-ros2 launch turtlebot3_navigation2 navigation2.launch.py map:=$HOME/ros2_ws/src/cs7785/maps/map.yaml
+$ ros2 launch turtlebot3_navigation2 navigation2.launch.py map:=$HOME/ros2_ws/src/cs7785/maps/map.yaml
 
 References  
 [1] https://emanual.robotis.com/docs/en/platform/turtlebot3/bringup/#bringup
