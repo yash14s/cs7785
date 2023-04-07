@@ -33,10 +33,13 @@ def process(img):
 			max_index = np.argmax(areas)
 			cnt = contours[max_index]
 		else:
+			print("inside try else")
 			return img
 	except:
+		print("inside except")
 		return img
 
+	print("returning cropped image")
 	x,y,w,h = cv2.boundingRect(cnt)
 	return img[y-20:y+h+10,x-20:x+w+10]
 
@@ -94,6 +97,7 @@ for i in range(len(lines)):
 
 	#TODO process test img
 	test_img = process(test_img)
+	print(test_img)
 	test_img = test_img.flatten().reshape(1, 33*25)
 	test_img = test_img.astype(np.float32)
 
