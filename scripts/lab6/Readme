@@ -1,0 +1,9 @@
+Setup:
+1. Ensure svm_model.pkl is in the same dir as classifier.py
+2. Place all test images and labels.txt inside the same dir. Name of that dir must be entered inside classifier.py
+
+To run:
+$ python3 classifier.py 
+
+Note:
+train.py only generates the pkl file, it's only provided for reference.
