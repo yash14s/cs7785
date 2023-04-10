@@ -6,4 +6,4 @@ To run:
 $ python3 classifier.py 
 
 Note:
-train.py only generates the pkl file, it's only provided for reference.
+train.py only generates the pickle file, it's only provided for reference.
