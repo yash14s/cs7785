@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 ### Authors: Yash and Pranay
-### Credits: Sohan Anisetty, Internet Codes, Scikit documentation
+### Credits: Sohan Anisetty, Sashank Garikipati, Internet Codes, Scikit documentation
 import os
 import cv2
 import sys
@@ -81,7 +81,7 @@ def create_dataset_hist(data, labels):
 def transform_image(image):
     image = np.array(image)
     gray = cv2.medianBlur(cv2.cvtColor(image, cv2.COLOR_RGB2GRAY), 7)
-    (_, image_th) = cv2.threshold(gray, 120, 255, cv2.THRESH_BINARY)
+    (_, image_th) = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
     edges = cv2.Canny(image_th, 50, 200)
 
     try:
@@ -130,13 +130,12 @@ def get_preds(test_folder , model):
         isWall, cropped = transform_image(img)
         
         if isWall:
-            y.append((int(name) , 0))
-            # img=np.array(img)
-            # class_num=match_template_in_case_of_wall(img)
-            # if(class_num!=-1):
-            #     y.append((int(name), int(class_num)))
-            # else:
-            #     y.append((int(name) , 0))  
+            img=np.array(img)
+            class_num=match_template_in_case_of_wall(img)
+            if(class_num!=-1):
+                y.append((int(name), int(class_num)))
+            else:
+                y.append((int(name) , 0))  
         else:
                 img_bw = cv2.cvtColor(cropped , cv2.COLOR_RGB2GRAY)
                 hog = cv2.HOGDescriptor((64,64),(16,16),(8,8),(8,8),9,1,4.0,0,2.0e-1,0,64)
@@ -183,7 +182,7 @@ def main(argv):
     warnings.filterwarnings("ignore")
 
     if len(argv)!=3:
-        DIR = "./2022Fimgs/"
+        DIR = "./test2022Fheldout/"
     else:
         DIR = str(argv[2])
 
@@ -197,7 +196,7 @@ def main(argv):
     y_labels = list(f)
     y_labels = [(int(i.split('\n')[0].split(',')[0]) , int(i.split('\n')[0].split(',')[1])) for i in y_labels]
     
-    SVM_CLASSIFIER = pickle.load(open('./7785_model.pkl', 'rb'))
+    SVM_CLASSIFIER = pickle.load(open('./svm_model.pickle', 'rb'))
     y_pred = get_preds(DIR, SVM_CLASSIFIER)
     metrics(y_labels, y_pred)
 
