@@ -1,6 +1,6 @@
 # Setup:
-1. Ensure 7785_model.pkl is in the same directory as classifier.py
-2. Place all test images and labels.txt inside the same dir. 
+1. Ensure svm_model.pickle is in the same directory as classifier.py
+2. Place all images and labels inside the same dir. 
 
 ## To Train the model:
 ```python
@@ -11,14 +11,19 @@ $ python3 classifier.py 1
 $ python3 classifier.py 0
 ```
 
-## To pass the test directory as an argument:
+## Pass the test directory and label name as an argument:
 ```python
-$ python3 classifier.py 0 <dir_name>
+$ python3 classifier.py 0 <dir_name> <labels_name>
 ```
 
 Example:
+Default options are DIR = "./2022Fheldout/" and labels_name="labels.txt". You can specify different arguments as shown below:
 ```python
-python classifier.py 0 ./2022Fimgs/
+python3 classifier.py 0 ./2022Fimgs/
+python3 classifier.py 0 ./2022Fimgs/ test.txt
+python3 classifier.py 0 ./2022Fimgs/ train.txt
+python3 classifier.py 0 ./2022Fimgs/ labels.txt
+python3 classifier.py 0 ./2022Fheldout/ test.txt
 ```
 
 
@@ -27,7 +32,7 @@ python classifier.py 0 ./2022Fimgs/
 
 --Readme.md
 
---7785_model.pkl
+--svm_model.pickle
 
 -- templates
 
@@ -35,6 +40,5 @@ python classifier.py 0 ./2022Fimgs/
 
     -- *.png
 
-    -- *.jpg
 
     -- labels.txt
