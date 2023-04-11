@@ -120,13 +120,11 @@ def match_template_in_case_of_wall(img_rgb):
         return -1
     
 
-def get_preds(test_folder , model):
+def get_preds(test_folder , model,y_labels):
     y = []
-    imgs = glob(test_folder+"*.jpg") + glob(test_folder+"*.png")
-
-    for i in range(len(imgs)):
-        img = Image.open(imgs[i]).convert("RGB")
-        name = imgs[i].split("/")[-1].split(".")[0]
+    for i in range(len(y_labels)):
+        img=cv2.imread(test_folder+str(y_labels[i][0])+".png")
+        name=y_labels[i][0]
         isWall, cropped = transform_image(img)
         
         if isWall:
@@ -181,12 +179,12 @@ def main(argv):
 
     warnings.filterwarnings("ignore")
 
-    if len(argv)!=3:
-        DIR = "./test2022Fheldout/"
+    if len(argv)==2:
+        DIR = "./2022Fheldout/"
     else:
         DIR = str(argv[2])
 
-    if len(argv)!=4:
+    if len(argv)==2 or len(argv)==3:
         labels_name="labels.txt"
     else:
         labels_name=str(argv[3])
@@ -197,7 +195,7 @@ def main(argv):
     y_labels = [(int(i.split('\n')[0].split(',')[0]) , int(i.split('\n')[0].split(',')[1])) for i in y_labels]
     
     SVM_CLASSIFIER = pickle.load(open('./svm_model.pickle', 'rb'))
-    y_pred = get_preds(DIR, SVM_CLASSIFIER)
+    y_pred = get_preds(DIR, SVM_CLASSIFIER,y_labels)
     metrics(y_labels, y_pred)
 
 if __name__=='__main__':
