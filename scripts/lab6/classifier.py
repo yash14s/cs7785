@@ -130,12 +130,13 @@ def get_preds(test_folder , model):
         isWall, cropped = transform_image(img)
         
         if isWall:
-            img=np.array(img)
-            class_num=match_template_in_case_of_wall(img)
-            if(class_num!=-1):
-                y.append((int(name), int(class_num)))
-            else:
-                y.append((int(name) , 0))  
+            y.append((int(name) , 0))
+            # img=np.array(img)
+            # class_num=match_template_in_case_of_wall(img)
+            # if(class_num!=-1):
+            #     y.append((int(name), int(class_num)))
+            # else:
+            #     y.append((int(name) , 0))  
         else:
                 img_bw = cv2.cvtColor(cropped , cv2.COLOR_RGB2GRAY)
                 hog = cv2.HOGDescriptor((64,64),(16,16),(8,8),(8,8),9,1,4.0,0,2.0e-1,0,64)
@@ -186,7 +187,12 @@ def main(argv):
     else:
         DIR = str(argv[2])
 
-    test_list_txt = os.path.join(DIR , "labels.txt")
+    if len(argv)!=4:
+        labels_name="labels.txt"
+    else:
+        labels_name=str(argv[3])
+
+    test_list_txt = os.path.join(DIR , labels_name)
     f = open(test_list_txt , 'r')
     y_labels = list(f)
     y_labels = [(int(i.split('\n')[0].split(',')[0]) , int(i.split('\n')[0].split(',')[1])) for i in y_labels]
