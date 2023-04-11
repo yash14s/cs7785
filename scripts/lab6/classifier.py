@@ -102,13 +102,13 @@ def transform_image(image):
 def match_template_in_case_of_wall(img_rgb):
     img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
     
-    template = cv2.imread('72.png', 0)
+    template = cv2.imread('templates/72.png', 0)
     res4 = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
 
-    template = cv2.imread('78.jpg', 0)
+    template = cv2.imread('templates/78.jpg', 0)
     res1 = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
 
-    template = cv2.imread('3.png', 0)
+    template = cv2.imread('templates/3.png', 0)
     res_1 = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
     if(res4>0.6):
         return 4

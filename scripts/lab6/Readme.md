@@ -21,12 +21,15 @@ Example:
 python classifier.py 0 ./2022Fimgs/
 ```
 
+
 ## Directory Structure
 --classifier.py
 
 --Readme.md
 
 --7785_model.pkl
+
+-- templates
 
 -- Test Directory
 
