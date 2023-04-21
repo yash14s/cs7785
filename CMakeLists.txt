@@ -38,7 +38,7 @@ install(PROGRAMS
   scripts/get_object_range.py
   scripts/chase_object.py
   scripts/goToGoal.py
-  scripts/final_project/classifier_real_time.py
+  scripts/final_project/wall_following.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

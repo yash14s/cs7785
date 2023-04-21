@@ -7,7 +7,6 @@ from rclpy.node import Node
 from geometry_msgs.msg import Pose2D
 from sensor_msgs.msg import LaserScan
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy, QoSDurabilityPolicy
-import sys
 import math
 import numpy as np
 

@@ -146,8 +146,8 @@ class classifier_real_time(Node):
 
 	def image_callback(self, CompressedImage):
 		self.imgBGR = CvBridge().compressed_imgmsg_to_cv2(CompressedImage, "bgr8")
-		cv2.imshow("Window", self.imgBGR)
-		cv2.waitKey(1)
+		#cv2.imshow("Window", self.imgBGR)
+		#cv2.waitKey(1)
 		self.pred = self.get_preds(self.imgBGR, self.SVM_CLASSIFIER)
 		
 		msg = Int8()
