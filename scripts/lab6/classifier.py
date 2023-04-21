@@ -123,7 +123,7 @@ def match_template_in_case_of_wall(img_rgb):
 def get_preds(test_folder , model,y_labels):
     y = []
     for i in range(len(y_labels)):
-        img=cv2.imread(test_folder+str(y_labels[i][0])+".png")
+        img=cv2.imread(test_folder+str(y_labels[i][0]).zfill(3)+".png")
         name=y_labels[i][0]
         isWall, cropped = transform_image(img)
         
@@ -160,7 +160,7 @@ def main(argv):
 
     if(int(Train)):
         print("Training Model")
-        DIR = "./2022Fheldout/"
+        DIR = "./2022/"
         warnings.filterwarnings("ignore")
         train_folder = DIR
         train_list_txt = os.path.join(train_folder , "train.txt")
@@ -180,7 +180,7 @@ def main(argv):
     warnings.filterwarnings("ignore")
 
     if len(argv)==2:
-        DIR = "./2022Fheldout/"
+        DIR = "./2023Simgs/"
     else:
         DIR = str(argv[2])
 
