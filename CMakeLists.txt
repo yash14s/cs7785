@@ -39,6 +39,7 @@ install(PROGRAMS
   scripts/chase_object.py
   scripts/goToGoal.py
   scripts/final_project/wall_following.py
+  scripts/final_project/wall_following_test.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

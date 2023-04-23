@@ -40,10 +40,10 @@ class wall_following(Node):
 		e = distance - self.reference_dist
 
 		if label == 1: #Follow right wall
-			velocity_msg_right.angular.z = Kp * e
+			velocity_msg_right.angular.z = -Kp * e
 			self.right_wall_vel_publisher.publish(velocity_msg_right)
 		elif label == 2: #Follow left wall
-			velocity_msg_left.angular.z = -Kp * e
+			velocity_msg_left.angular.z = Kp * e
 			self.left_wall_vel_publisher.publish(velocity_msg_left)
 
 		
@@ -70,7 +70,7 @@ class wall_following(Node):
 			base_index = self.angle2index(90)
 
 		right_index = base_index + round((theta/2 - self.range_data.angle_min)/self.range_data.angle_increment)
-		left_index =  base_index - round((theta/2- self.range_data.angle_min)/self.range_data.angle_increment)
+		left_index =  base_index - round((theta/2 - self.range_data.angle_min)/self.range_data.angle_increment)
 		'''
 		print("****************************")
 		print("label:", label)
@@ -86,6 +86,7 @@ class wall_following(Node):
 		left_index, right_index = self.compute_window(label)
 		#Init
 		min_distance = float("inf")
+		index = left_index
 
 		#Check through the window
 		for i in range(left_index, right_index):
@@ -97,21 +98,30 @@ class wall_following(Node):
 			if raw_distance != float("inf") and (not np.isnan(raw_distance)):
 				if raw_distance < min_distance:
 					min_distance = raw_distance
+					index = i
 		
 		distance = min_distance
-		#print("Index:", index)
-		#print("Distance:", self.distance)
+		print("Index:", index)
+		print("Theta:", self.rad2degree(self.index2angle(index)))
+		print("Distance:", distance)
 		return distance
 
 
 	def deg2rad(self, degrees):
 		return degrees * math.pi/180
 
+	def rad2degree(self, rad):
+		return rad * 180/math.pi
+
 	def angle2index(self, degrees):
-		#Convert angle in degrees (clk) to index 
+		#Convert angle in degrees (anti-clk) to index 
 		theta = self.deg2rad(degrees)
 		index = round((theta - self.range_data.angle_min)/self.range_data.angle_increment)
 		return index
+	
+	def index2angle(self, index):
+		theta = index * self.range_data.angle_increment + self.range_data.angle_min
+		return theta
 
 def main():
 	rclpy.init() #init routine needed for ROS2.
