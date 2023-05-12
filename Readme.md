@@ -8,7 +8,4 @@ This repository contains our solution for the course CS 7785 at Georgia Tech, ta
 
 A Linux Machine with ROS2 installed. Refer /assignment_pdfs/lab0.pdf for instructions. All additional dependencies are mentioned in the /assignment_pdfs directory with the corresponding labs.
 
-<video controls width="640" height="360">
-  <source src="https://github.com/yash14s/cs7785/blob/main/media/final_demo.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+![DemoGIF](https://github.com/yash14s/cs7785/blob/main/media/final_demo.gif)
