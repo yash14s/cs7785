@@ -1,6 +1,6 @@
 # CS 7785: Intro to Robotics Research
 
-![Turtlebot](https://github.com/yash14s/cs7785/blob/main/media/turtlebot3.jpg)
+<img src="https://github.com/yash14s/cs7785/blob/main/media/turtlebot3.jpg" alt="Turtlebot" width="500">
 
 This repository contains our solution for the course CS 7785 at Georgia Tech, taught by Dr Sean Wilson during Spring 2023. Contributors: [Pranay Mathur](https://github.com/Matnay) and [Yash Srivastava](https://github.com/yash14s).
 
