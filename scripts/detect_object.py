@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import CompressedImage
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy, QoSDurabilityPolicy
-from geometry_msgs.msg import Twist,Point
+from geometry_msgs.msg import Twist, Point
 
 import sys
 
@@ -13,7 +13,7 @@ from std_msgs.msg import Bool
 
 #Select image topic depending upon sim/real
 #image_topic = '/camera/image_raw'
-image_topic = '/camera/image/compressed'
+image_topic = '/image_raw/compressed'
 
 
 class detect_object(Node):

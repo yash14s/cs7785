@@ -30,7 +30,7 @@ class chase_object(Node):
         self.waypoints = []
         self.laserscan_subscriber = self.create_subscription(
             LaserScan,'/scan',self.scan_callback,qos_profile)
-        with open("wayPoints.txt") as file_in:
+        with open("waypoints_sim.txt") as file_in:
             for line in file_in:
                 self.waypoints.append((float(line.split()[0]),float(line.split()[1])))
         
@@ -171,7 +171,7 @@ class chase_object(Node):
 
     def update_Odometry(self,Odom):
             position = Odom.pose.pose.position
-            #Orientation uses the quaternion aprametrization.
+            #Orientation uses the quaternion parametrization.
             #To get the angular position along the z-axis, the following equation is required.
             q = Odom.pose.pose.orientation
             orientation = np.arctan2(2*(q.w*q.z+q.x*q.y),1-2*(q.y*q.y+q.z*q.z))
